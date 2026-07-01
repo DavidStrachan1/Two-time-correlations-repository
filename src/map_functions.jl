@@ -43,11 +43,14 @@ export Block_submatrices
 
 
 function map_check(ψf,ψi,Λmat,layout)
+    """
+    Checks the map satisfies the relation ρf = Λmat*ρi, where ρf and ρi are the vectorised density matrices of the final and initial states respectively.
+    """
     ρf = vectorise_ρ(ψf,layout)
     ρi = vectorise_ρ(ψi,layout)
     return norm(ρf - Λmat*ρi)
 end
-function calculateDynamicalMap(ψ_input,layout,ordering_choice;kwargs...)
+function calculateDynamicalMap(ψ_input,layout,ordering_choice)
     """
     Calculates the dynamical map.
     I have left the code I use the interleaved ordering in but commented out, 
@@ -55,7 +58,7 @@ function calculateDynamicalMap(ψ_input,layout,ordering_choice;kwargs...)
     """
 
 
-    use_spin_operators = get(kwargs,:use_spin_operators,false)
+    #use_spin_operators = get(kwargs,:use_spin_operators,false)
     Ns = length(layout.system)
     s = siteinds(ψ_input)
 
@@ -460,6 +463,9 @@ function propagate_MPS(ψ,H_MPO,obs,TDVP_params,layout; kwargs...)
     #initial state is the choi state.
     compute_maps_bool = get(kwargs,:compute_maps_bool,true)
 
+    #boolean for whether to enrich the state every map_step
+    enrich_bool = get(kwargs,:enrich_bool,false)
+
     #how many timesteps between each map calculation
     map_step = get(kwargs,:map_step,1) 
     @show(map_step)
@@ -494,50 +500,21 @@ function propagate_MPS(ψ,H_MPO,obs,TDVP_params,layout; kwargs...)
         global sim_t += TDVP_params.δt
         @show(sim_t)
 
-        if compute_maps_bool && (i % map_step == 0)
-            # if ((i+1) % map_step == 0)
+        if i % map_step == 0
+            if enrich_bool
+                ψt = expand(ψt,H_MPO;alg = "global_krylov")    
+            end
+            if compute_maps_bool
+                #This part can be greatly improved, as the MPS_extraction function already performs time evolution, so this is overcalculating.
 
-            #     MPS_vec[1] = ψt
-            # elseif (i % map_step == 0)
-            #     MPS_vec[2] = ψt
-            #     push!(map_times, sim_t)
-
-            #     #if it's the end of the simulation, an extra
-            #     #timestep is done for the propagator calculation.
-            #   
-            #     if i == length(times)
-            #         ψ3 = tdvp(H_MPO, -im * TDVP_params.δt, ψt; 
-            #         time_step = -im * TDVP_params.δt,
-            #         cutoff = TDVP_params.tdvp_cutoff, 
-            #         mindim = TDVP_params.minbonddim, 
-            #         maxdim = TDVP_params.maxbonddim, 
-            #         outputlevel = 1, 
-            #         observer! = obs)
-            #         MPS_vec[3] = ψ3
-            #         println("Time taken for map extraction")
-            #         @time begin
-            #             L, Λ = compute_map_and_propagator(MPS_vec,layout,TDVP_params.δt;kwargs...)
-            #             push!(L_vec, L)
-            #             push!(Λ_vec, Λ)
-            #         end
-            #     end
-            # elseif ((i-1) % map_step ==0)
-                
-            #     MPS_vec[3] = ψt
-            #     println("Time taken for map extraction")
-            #     @time begin
-            #         L, Λ = compute_map_and_propagator(MPS_vec,layout,TDVP_params.δt;kwargs...)
-            #         push!(L_vec, L)
-            #         push!(Λ_vec, Λ)
-            #     end
-            # end
-            push!(map_times, sim_t)
-            MPS_vec=  MPS_extraction(ψt,H_MPO,TDVP_params)
-            println("Time taken for map extraction")
-            @time begin
-                L, Λ = compute_map_and_propagator(MPS_vec,layout,TDVP_params.δt;kwargs...)
-                push!(L_vec, L)
-                push!(Λ_vec, Λ)
+                push!(map_times, sim_t)
+                MPS_vec=  MPS_extraction(ψt,H_MPO,TDVP_params)
+                println("Time taken for map extraction")
+                @time begin
+                    L, Λ = compute_map_and_propagator(MPS_vec,layout,TDVP_params.δt;kwargs...)
+                    push!(L_vec, L)
+                    push!(Λ_vec, Λ)
+                end
             end
         end
         # Boundary condition check
