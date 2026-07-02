@@ -6,7 +6,7 @@ The main package file is:
 src/CorrelationProject.jl
 which loads the source files:
 include("Setup.jl")
-include("map_functions.jl")
+include("map_functions.jl") \\
 Requirements
 You will need:
 Julia 1.10
