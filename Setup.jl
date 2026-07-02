@@ -1,4 +1,15 @@
 
+module Setup
+
+    using ITensors
+    using ITensorMPS
+    using PolyChaos
+    using LinearAlgebra
+    using Plots
+    using Observers
+    using Kronecker
+    using SparseArrays
+    
     export BathParameters
     export SystemParameters
     export TDVP_parameters
@@ -80,14 +91,14 @@
 
     function thermofield_spectral_density(ω,bath::BathParameters,::Filled)
         #Spectral density for a filled chain
-       # J = box_spectral_density(bath.Γ,ω,bath.D)
+    # J = box_spectral_density(bath.Γ,ω,bath.D)
         J = semicircular_density(bath.Γ,ω,bath.D)
         return J * fermi_factor(ω,bath.β,bath.μ)
     end
 
     function thermofield_spectral_density(ω,bath::BathParameters,::Empty)
         #Spectral density for an empty chain
-       # J = box_spectral_density(bath.Γ,ω,bath.D)
+    # J = box_spectral_density(bath.Γ,ω,bath.D)
         J = semicircular_density(bath.Γ,ω,bath.D)
         return J * (1 - fermi_factor(ω,bath.β,bath.μ))
     end
@@ -259,3 +270,5 @@
         #measures density at site
         return real(corr[site,site])
     end
+    
+end
