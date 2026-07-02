@@ -23,7 +23,8 @@ Git
 Jupyter, VS Code, or another environment capable of running Julia notebooks
 
 
-Downloading the repository
+
+Downloading the repository:
 
 Clone the repository with:
 
@@ -37,7 +38,8 @@ Code → Download ZIP
 
 and then extract the folder.
 
-One-time Julia setup
+
+One-time Julia setup:
 
 From the repository root, start Julia with the project environment activated:
 
@@ -52,13 +54,17 @@ Pkg.instantiate()
 This installs the package versions specified in Project.toml and Manifest.toml.
 This setup step only needs to be run once, unless the package environment changes.
 
-Loading the package
+
+
+Loading the package:
 
 After the environment has been instantiated, the package can be loaded with:
 
 using CorrelationProject
 
-Running the notebooks:
+
+
+Running the notebook:
 
 If the notebook does not find CorrelationProject
 
